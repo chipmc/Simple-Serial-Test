@@ -10,8 +10,6 @@
 #include "Particle.h"
 #include "MagSensor.h"
 
-SYSTEM_MODE(MANUAL);      
-
 MagSensor *MagSensor::_instance;
 
 static float baseline = 0;
@@ -54,7 +52,7 @@ int MagSensor::setup(){
         delay(10);
     }  
     baseline = Serial1.parseFloat();
-    Serial.printlnf("Baseline value is: %d", baseline);
+    Serial.printlnf("Baseline value is: %f", baseline);
 
     pinMode(Light, OUTPUT);
 
@@ -90,9 +88,10 @@ int MagSensor::loop(){       // Returns 1 if a vehicle has been fully sensed.
         case 2:
             Serial.println("DONE");
             digitalWrite(Light, LOW);
-            return 1;
-
+            return 1;  
     }
+
+    return 0;
 }
 
 float MagSensor::getBaseline(){
@@ -100,17 +99,17 @@ float MagSensor::getBaseline(){
 }
 
 int MagSensor::getThreshold(){
-
+    return 0; //TODO
 }
 
 int MagSensor::setThreshold(int threshold){
-
+    return 0; //TODO
 }
 
 int MagSensor::getResetThreshold(){
-
+    return 0; //TODO
 }
 
 int MagSensor::setResetThreshold(int reset_threshold){
-
+    return 0; //TODO
 }

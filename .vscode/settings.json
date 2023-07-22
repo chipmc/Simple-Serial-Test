@@ -4,6 +4,8 @@
     "files.associations": {
         "*.ino": "cpp"
     },
+    "particle.targetDevice": "e00fce68a19247cf5511b9b8",
+    "particle.firmwareVersion": "4.1.0",
     "particle.targetPlatform": "boron",
-    "particle.targetDevice": "Boron-Mag-Dev-2"
+    "cmake.configureOnOpen": true
 }

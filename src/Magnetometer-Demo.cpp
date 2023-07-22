@@ -11,7 +11,7 @@
  *              After detecting a vehicle, returns total number of vehicles detected. 
  */
 
-float count = 0; 
+int count = 0; 
 
 SYSTEM_MODE(MANUAL);
 SYSTEM_THREAD(ENABLED);

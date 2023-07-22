@@ -46,8 +46,9 @@ int VehicleCounter::loop(){     // updates vehicle count using MagSensor
     if (MagSensor::instance().loop()) { 
         ++vehicleCount;
         ++totalVehicleCount;
-        return getTotalVehicleCount();
-    }   
+        return totalVehicleCount;
+    }
+    return 0;
 }
 
 int getCountAndReset(){
