@@ -25,6 +25,6 @@ void setup() {
 void loop() {
   count = VehicleCounter::instance().loop(); // if vehicle count has been updated
   if(count > 0){
-    Serial.printlnf("%d Vehicles Detected", count); // output vehicle count
+    Serial.printlnf("~~~~~~~~~~ %d Vehicles Detected ~~~~~~~~~~\n", count); // output vehicle count
   }
 }

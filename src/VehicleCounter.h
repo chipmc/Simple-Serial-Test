@@ -21,6 +21,7 @@
  */
 class VehicleCounter {
 public:
+
     /**
      * @brief Gets the singleton instance of this class, allocating it if necessary
      * 

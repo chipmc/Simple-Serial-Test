@@ -43,7 +43,7 @@ void VehicleCounter::setup(){
 
 
 int VehicleCounter::loop(){     // updates vehicle count using MagSensor
-    if (MagSensor::instance().loop()) { 
+    if (MagSensor::instance().loop() == 1) { 
         ++vehicleCount;
         ++totalVehicleCount;
         return totalVehicleCount;

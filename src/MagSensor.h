@@ -23,6 +23,7 @@
  */
 class MagSensor {
 public:
+
     /**
      * @brief Gets the singleton instance of this class, allocating it if necessary
      * 
@@ -36,11 +37,11 @@ public:
      * 
      * You typically use MagSensor::instance().setup();
      */
-    int setup();
+    void setup();
 
     /**
      * @brief Perform application loop operations; call this from global application loop()
-     * Returns 1 if a vehicle has been fully sensed, returning the value
+     * Returns data if a vehicle has been fully sensed, returning the value
      * when a vehicle has STOPPED being sensed.
      * 
      * You typically use MagSensor::instance().update();
@@ -51,6 +52,11 @@ public:
      * @brief Returns the baseline value of the Magnetometer
     */
     float getBaseline();
+    
+    /**
+     * @brief Recalibrates the baseline value of the Magnetometer. Returns baseline value if successful.
+    */
+    float recalibrateBaseline();
 
     /**
      * @brief Gets the threshold, which tells the magnetometer when to BEGIN sensing a vehicle
