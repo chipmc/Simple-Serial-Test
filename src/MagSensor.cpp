@@ -58,10 +58,10 @@ MagSensor::~MagSensor() {
 void MagSensor::setup(){
     
     pinMode(Light, OUTPUT);
-    Serial.begin(115200);
+    //Serial.begin(115200);
     Serial1.begin(115200);
 
-    waitUntil(Serial.isConnected);
+    //waitUntil(Serial.isConnected);
 
     // Serial.println("Serial is connected");
 
