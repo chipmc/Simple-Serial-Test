@@ -70,7 +70,7 @@ void MagSensor::setup(){
     }
     delay(1000);  // Make sure the serial monitor can connect
 
-    Serial1.readStringUntil('\r'); //wait for clean line
+    Serial1.readStringUntil('\n'); //wait for clean line
     Serial1.parseInt(); //parse over vehicle_sensed
     threshold = Serial1.parseInt();
     reset_threshold = Serial1.parseInt();
@@ -85,7 +85,8 @@ void MagSensor::setup(){
  * mag_y(float),mag_z(float),mag_RMS(float),vehicle_sensed(int)/n
  */
 void MagSensor::loop(){       // Returns 1 if a vehicle has been fully sensed.
-    if(ready == 0) {        
+    if(ready == 0) {
+        Serial1.readStringUntil('\n'); //wait for clean line        
         vehicle_sensed = Serial1.parseInt(); //used to check if vehicle_sensed
         Serial1.parseInt(); //parse over threshold
         Serial1.parseInt(); //parse over reset_threshold
@@ -94,6 +95,7 @@ void MagSensor::loop(){       // Returns 1 if a vehicle has been fully sensed.
         mag_y = Serial1.parseFloat(); //store mag_y
         mag_z = Serial1.parseFloat(); //store mag_z
         mag_RMS = Serial1.parseFloat(); //store mag_RMS
+        // Serial.println(vehicle_sensed);
         // Simple FSM for vehicle_sensed state
         switch(state){
             // WAITING
