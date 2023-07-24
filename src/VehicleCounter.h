@@ -9,6 +9,7 @@
 #define __VEHICLECOUNTER_H
 
 #include "Particle.h"
+#include "MagSensor.h"
 
 /**
  * This class is a singleton; you do not create one as a global, on the stack, or with new.

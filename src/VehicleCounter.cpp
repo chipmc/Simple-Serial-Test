@@ -8,7 +8,6 @@
 
 #include "Particle.h"
 #include "VehicleCounter.h"
-#include "MagSensor.h"
 
 // Count since last call to getCountAndReset();
 static int vehicleCount = 0;
@@ -34,29 +33,20 @@ VehicleCounter::~VehicleCounter() {
 
 
 void VehicleCounter::setup(){
-    
-    MagSensor::instance().setup();
-    
-    Serial.println("MagSensor instance initialized.");
-
 }
 
-
 int VehicleCounter::loop(){     // updates vehicle count using MagSensor
-    if (MagSensor::instance().loop() == 1) { 
         ++vehicleCount;
         ++totalVehicleCount;
         return totalVehicleCount;
-    }
-    return 0;
 }
 
-int getCountAndReset(){
+int VehicleCounter::getCountAndReset(){
     int count = vehicleCount;
     vehicleCount = 0;
     return count;
 }
 
-int getTotalVehicleCount(){
+int VehicleCounter::getTotalVehicleCount(){
     return totalVehicleCount;
 }

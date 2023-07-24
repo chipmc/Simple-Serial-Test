@@ -11,20 +11,36 @@
  *              After detecting a vehicle, returns total number of vehicles detected. 
  */
 
-int count = 0; 
 
-SYSTEM_MODE(MANUAL);
+SYSTEM_MODE(AUTOMATIC);
 SYSTEM_THREAD(ENABLED);
 
+int totalVehicles = 0;
+
 void setup() {  
-  //initiate vehicleCounter and start loop
+
+  MagSensor::instance().setup();
+  //Serial.println("MagSensor instance initialized.");
+
   VehicleCounter::instance().setup();
-  Serial.println("Vehicle Counter Initiated");
+  //Serial.println("Vehicle Counter Initiated");
 }
 
 void loop() {
-  count = VehicleCounter::instance().loop(); // if vehicle count has been updated
-  if(count > 0){
-    Serial.printlnf("~~~~~~~~~~ %d Vehicles Detected ~~~~~~~~~~\n", count); // output vehicle count
+  float* vehicleData = MagSensor::instance().getData();
+  MagSensor::instance().loop();
+  if(vehicleData != 0){
+    Particle.publish("Vehicle Detected!");
+    Particle.publish("Detected at", String::format("[mag_RMS: %f, mag_x: %f, mag_y: %f, mag_z: %f]", 
+                        vehicleData[3],
+                        vehicleData[0],
+                        vehicleData[1],
+                        vehicleData[2] ));
+    Particle.publish("Released at", String::format("[mag_RMS: %f, mag_x: %f, mag_y: %f, mag_z: %f]", 
+                        vehicleData[7],
+                        vehicleData[4],
+                        vehicleData[5],
+                        vehicleData[6]));
+    Particle.publish("Total Vehicles", String(VehicleCounter::instance().loop())); // output vehicle count              
   }
 }

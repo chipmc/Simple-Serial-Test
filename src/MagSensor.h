@@ -41,12 +41,9 @@ public:
 
     /**
      * @brief Perform application loop operations; call this from global application loop()
-     * Returns data if a vehicle has been fully sensed, returning the value
-     * when a vehicle has STOPPED being sensed.
-     * 
-     * You typically use MagSensor::instance().update();
+     * Updates values of vehicleData
      */
-    int loop();
+    void loop();
 
     /**
      * @brief Returns the baseline value of the Magnetometer
@@ -80,7 +77,24 @@ public:
     */
     int setResetThreshold(int reset_threshold);
 
+    /**
+     * @brief Returns vehicle data array, format:
+     *
+     * 
+     *       0: ready; -- designates a data set as ready to read
+     *       1: mag_x;
+     *       2: mag_y;
+     *       3: mag_z;
+     *       4: mag_RMS;
+     *       5: reset_mag_x;
+     *       6: reset_mag_y;
+     *       7: reset_mag_z;
+     *       8: reset_mag_RMS;
+    */
+    float* getData();
+
 protected:
+    
     /**
      * @brief The constructor is protected because the class is a singleton
      * 
