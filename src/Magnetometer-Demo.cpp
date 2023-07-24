@@ -30,17 +30,16 @@ void loop() {
   float* vehicleData = MagSensor::instance().getData();
   MagSensor::instance().loop();
   if(vehicleData != 0){
-    Particle.publish("Vehicle Detected!");
-    Particle.publish("Detected at", String::format("[mag_RMS: %f, mag_x: %f, mag_y: %f, mag_z: %f]", 
+    Particle.publish("Vehicle Detected!", String::format("[mag_RMS: %f, mag_x: %f, mag_y: %f, mag_z: %f]", 
                         vehicleData[3],
                         vehicleData[0],
                         vehicleData[1],
                         vehicleData[2] ));
-    Particle.publish("Released at", String::format("[mag_RMS: %f, mag_x: %f, mag_y: %f, mag_z: %f]", 
+    Particle.publish("Vehicle Released.", String::format("[mag_RMS: %f, mag_x: %f, mag_y: %f, mag_z: %f]", 
                         vehicleData[7],
                         vehicleData[4],
                         vehicleData[5],
                         vehicleData[6]));
-    Particle.publish("Total Vehicles", String(VehicleCounter::instance().loop())); // output vehicle count              
+    Particle.publish("Total Vehicles:", String(VehicleCounter::instance().loop())); // output vehicle count              
   }
 }
