@@ -4,7 +4,7 @@
  * Date: July 2023
  * Description: MagModel is a model that interfaces with the Magnetometer and the Controller. Contains data
  *              about a vehicle detection as well as the business logic for parsing and updating that data
- *              using the serial stream coming from the Magnetometer. Observed by the controller 
+ *              using the serial stream coming from the Magnetometer. Observed by the Controller.
  *              
 */
 
@@ -43,7 +43,7 @@ static float mag_z = 0;
 // Root mean square of above vector magnitudes (uT)
 static float mag_RMS = 0;
 
-static int state = 0; // Device state. States are: 0 (WAITING), 1 (SENSING), and 2 (DONE)
+static int state = 0; // Device state. States are: 0 (WAITING), 1 (SENSING), and 2 (DONE). Set to -1 for baseline recalibration.
 static int vehicle_sensed = 0; // Set to 1 if vehicle is detected, transitions 'state' to SENSING.
 static int ready = 0; // Flag set to 1 in the DONE state. Resets to 0 after passData has been retrieved by the Controller
 
@@ -86,7 +86,7 @@ void MagModel::setup(){
     threshold = Serial1.parseInt();
     reset_threshold = Serial1.parseInt();
     baseline = Serial1.parseFloat();
-
+    delay(2000);
     Particle.publish("Initialized", String::format("Threshold: %d, Reset Threshold: %d, Baseline %f", threshold, reset_threshold, baseline));
 }
 
@@ -152,6 +152,8 @@ void MagModel::loop(){       // Returns 1 if a vehicle has been fully sensed.
                 state = 0;
                 break;
 
+            default:
+                break;
         }
     }
 }
@@ -165,12 +167,16 @@ float* MagModel::getPassData(){
 }
 
 float MagModel::getBaseline(){
-    return baseline;
+    if(baseline != 0) {
+        return baseline;
+    }
+    return -1; // error
 }
 
-int MagModel::recalibrateBaseline(){
+float MagModel::recalibrateBaseline(){
     Serial1.println("CONF:BAS");
-    return 1;
+    loop(); // Update the values
+    return baseline;
 }
 
 int MagModel::getThreshold(){
@@ -179,7 +185,11 @@ int MagModel::getThreshold(){
 
 int MagModel::setThreshold(int thres){
     if(thres <= MAX_THRESHOLD) {
-        return Serial1.printlnf("CONF:THR %d", thres);
+        Serial1.printlnf("CONF:THR %d", thres);
+        loop(); // Update the values
+        thres = getThreshold();
+        Particle.publish("New Threshold Set", String(thres));
+        return thres;
     }
     return -1; // invalid
 }
@@ -191,6 +201,9 @@ int MagModel::getResetThreshold(){
 int MagModel::setResetThreshold(int reset_thres){
     if(reset_thres <= MAX_RESET_THRESHOLD) {
         Serial1.printlnf("CONF:RES %d", reset_thres);
+        loop(); // Update the values.
+        reset_thres = getResetThreshold();
+        Particle.publish("New Reset Threshold Set", String(reset_thres));
         return reset_thres;
     }
     return -1; // invalid
@@ -199,9 +212,12 @@ int MagModel::setResetThreshold(int reset_thres){
 int MagModel::getCountAndReset(){ 
     int count = vehicleCount;
     vehicleCount = 0;
+    Particle.publish("Count Retrieved", String(count));
+    Particle.publish("Count Reset");
     return count;
 }
 
 int MagModel::getTotalVehicleCount(){ 
+    Particle.publish("Total Vehicle Count", String(totalVehicleCount));
     return totalVehicleCount;
 }

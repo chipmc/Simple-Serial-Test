@@ -2,9 +2,10 @@
  * Magnetometer Sensor Class
  * Author: Alex Bowen (referenced https://github.com/chipmc/TOF-Sensor-Demo/blob/master/src/TofSensor.h)
  * Date: July 2023
- * Description: Defines functions and instances of a singleton MagModel class, which will
- *              read the data stream from the magnetometer and return 1 after a vehicle
- *              is sensed. Will be used with VehicleCounter to increment the vehicle count.
+ * Description: Defines functions and instances of a singleton MagModel class, which will contain data
+ *              about a vehicle detection as well as the business logic for parsing and updating that data
+ *              using the serial stream coming from the Magnetometer.
+ *              
 */
 
 #ifndef __MAGSENSOR_H
@@ -67,9 +68,9 @@ public:
     float getBaseline();
     
     /**
-     * @brief Recalibrates the baseline value of the Magnetometer.
+     * @brief Recalibrates and returns the baseline value of the Magnetometer.
     */
-    int recalibrateBaseline();
+    float recalibrateBaseline();
 
     /**
      * @brief Gets the threshold, which tells the magnetometer when to BEGIN sensing a vehicle

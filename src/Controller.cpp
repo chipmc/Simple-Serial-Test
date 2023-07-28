@@ -19,11 +19,8 @@ float getBaseline(){
   return MagModel::instance().getBaseline();
 }
 
-int recalibrateBaseline(String cmd){
-  if(cmd == "1") {
-    return MagModel::instance().recalibrateBaseline();
-  }
-  return -1; // invalid
+float recalibrateBaseline(){
+  return MagModel::instance().recalibrateBaseline();
 }
 
 int getThreshold(){
@@ -39,14 +36,11 @@ int getResetThreshold(){
 }
 
 int setResetThreshold(String reset_threshold){
-  return MagModel::instance().setResetThreshold(reset_threshold.toInt()); // returns -1 if > MAX_RESET_THRESHOLD
+  return MagModel::instance().setResetThreshold(reset_threshold.toInt()); ;// returns -1 if > MAX_RESET_THRESHOLD
 }
 
-int getCountAndReset(String cmd){
-  if(cmd == "1") {
-    return MagModel::instance().recalibrateBaseline();
-  }
-  return -1; // invalid
+int getCountAndReset(){
+  return MagModel::instance().getCountAndReset();
 }
 
 int getTotalVehicleCount(){
@@ -55,19 +49,20 @@ int getTotalVehicleCount(){
 
 void setup() {  
 
+  // Initiate the MagModel.
   MagModel::instance().setup();
   
-  // Particle variables
+  // Declare Particle variables.
   Particle.variable("Baseline", getBaseline);
   Particle.variable("Threshold", getThreshold);
   Particle.variable("Reset Threshold", getResetThreshold);
-  Particle.variable("Total Vehicle Count", getTotalVehicleCount);
+  Particle.variable("Last Count", getCountAndReset);
+  Particle.variable("Total Vehicles", getTotalVehicleCount);
+  Particle.variable("Recalibrate Baseline", recalibrateBaseline);
 
-  // Particle functions
-  Particle.function("Recalibrate Baseline? (Enter \"1\")", recalibrateBaseline);
+  // Declare Particle functions.
   Particle.function("Set the Threshold", setThreshold);
   Particle.function("Set the Reset Threshold", setResetThreshold);
-  Particle.function("Retrieve Count And Reset? (Enter \"1\")", getCountAndReset);
 }
 
 void loop() {
@@ -75,7 +70,7 @@ void loop() {
   // Ask the magnetometer for passData.
   float* passData = MagModel::instance().getPassData();
 
-  // Continue looping MagModel.
+  // Loop MagModel for next iteration.
   MagModel::instance().loop();
 
   // If passData came in, publish events.
@@ -93,6 +88,6 @@ void loop() {
                         passData[5],
                         passData[6]));
     
-    Particle.publish("Total Vehicles", String(MagModel::instance().getTotalVehicleCount())); // output vehicle count              
+    MagModel::instance().getTotalVehicleCount();           
   }
 }
