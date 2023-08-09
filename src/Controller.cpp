@@ -1,6 +1,3 @@
-#include "Particle.h"
-#include "MagModel.h"
-
 /*
  * Controller for the Magnetometer Boron project.
  * Description: Cellular data exchange for a Magnetometer using a Particle Boron.
@@ -12,57 +9,22 @@
  *              user input.            
  */
 
-SYSTEM_MODE(AUTOMATIC);
-SYSTEM_THREAD(ENABLED);
+// Version history
+// 0.1 - Moved Particle functions out to their own class
 
-float getBaseline(){
-  return MagModel::instance().getBaseline();
-}
+#include "Particle.h"
+#include "MagModel.h"
+#include "Particle_Functions.h"						// Where we put all the functions specific to Particle
 
-float recalibrateBaseline(){
-  return MagModel::instance().recalibrateBaseline();
-}
-
-int getThreshold(){
-  return MagModel::instance().getThreshold();
-}
-
-int setThreshold(String threshold){
-  return MagModel::instance().setThreshold(threshold.toInt()); // returns -1 if > MAX_THRESHOLD
-}
-
-int getResetThreshold(){
-  return MagModel::instance().getResetThreshold();
-}
-
-int setResetThreshold(String reset_threshold){
-  return MagModel::instance().setResetThreshold(reset_threshold.toInt()); ;// returns -1 if > MAX_RESET_THRESHOLD
-}
-
-int getCountAndReset(){
-  return MagModel::instance().getCountAndReset();
-}
-
-int getTotalVehicleCount(){
-  return MagModel::instance().getTotalVehicleCount();
-}
+char currentPointRelease[6] ="0.1";
+PRODUCT_VERSION(1);									// For now, we are putting nodes and gateways in the same product group - need to deconflict #
 
 void setup() {  
-
   // Initiate the MagModel.
   MagModel::instance().setup();
-  
-  // Declare Particle variables.
-  Particle.variable("Baseline", getBaseline);
-  Particle.variable("Threshold", getThreshold);
-  Particle.variable("Reset Threshold", getResetThreshold);
-  Particle.variable("Last Count", getCountAndReset);
-  Particle.variable("Total Vehicles", getTotalVehicleCount);
-  Particle.variable("Recalibrate Baseline", recalibrateBaseline);
 
-  // Declare Particle functions.
-  Particle.function("Set the Threshold", setThreshold);
-  Particle.function("Set the Reset Threshold", setResetThreshold);
+  // Initialize the Particle Functions
+  Particle_Functions::instance().setup();			// Initialize Particle Functions and Variables
 }
 
 void loop() {

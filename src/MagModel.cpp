@@ -69,11 +69,8 @@ MagModel::~MagModel() {
 void MagModel::setup(){
     
     pinMode(Light, OUTPUT);
-    // Serial.begin(115200);
-    Serial1.begin(115200);
 
-    //waitUntil(Serial.isConnected);
-    //Serial.println("Serial is connected");
+    Serial1.begin(115200);
 
     while (!Serial1.available()){
         delay(10); // Wait until serial connection is established
