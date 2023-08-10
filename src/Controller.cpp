@@ -12,6 +12,7 @@
 // Version history
 // 0.1 - Moved Particle functions out to their own class - Did not work - need shared storage
 // 0.2 - ok, last rev was non-functional - this rev works but need to deconflict Particle functions
+// 0.3 - Added Particle functions for setting baseline and threshold as integers
 
 #include "Particle.h"
 #include "MagModel.h"

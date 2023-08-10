@@ -20,7 +20,7 @@ struct current_structure {
 };
 
 struct sysStatus_structure {
-  double baseline;                                   // Baseline value for the magnetometer
+  int baseline;                                   // Baseline value for the magnetometer
   int threshold;                                  // Threshold value for the magnetometer
   int reset_threshold;                            // Reset threshold value for the magnetometer
 };

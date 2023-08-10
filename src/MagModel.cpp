@@ -61,18 +61,15 @@ void MagModel::setup(){
  */
 void MagModel::loop(){       // Returns 1 if a vehicle has been fully sensed.
 
-    Serial1.readStringUntil('\n'); //wait for clean line        
-    current.vehicle_sensed = Serial1.parseInt(); //used to check if vehicle_sensed
-    sysStatus.threshold = Serial1.parseInt(); //parse threshold
-    sysStatus.reset_threshold = Serial1.parseInt(); //parse reset_threshold
-
-    sysStatus.baseline = Serial1.parseFloat(); // recalibrate baseline
-    if (current.state == 1) {
-        current.mag_x = Serial1.parseFloat(); //store mag_x
-        current.mag_y = Serial1.parseFloat(); //store mag_y
-        current.mag_z = Serial1.parseFloat(); //store mag_z
-        current.mag_RMS = Serial1.parseFloat(); //store mag_RMS
-    }
+    Serial1.readStringUntil('\n');                          //wait for clean line        
+    current.vehicle_sensed = Serial1.parseInt();            //used to check if vehicle_sensed
+    sysStatus.threshold = Serial1.parseInt();               //parse threshold
+    sysStatus.reset_threshold = Serial1.parseInt();         //parse reset_threshold
+    sysStatus.baseline = Serial1.parseInt();                // recalibrate baseline
+    current.mag_x = Serial1.parseFloat();                   //store mag_x
+    current.mag_y = Serial1.parseFloat();                   //store mag_y
+    current.mag_z = Serial1.parseFloat();                   //store mag_z
+    current.mag_RMS = Serial1.parseFloat();                 //store mag_RMS
 
     // Simple FSM for vehicle_sensed state
     switch(current.state){
