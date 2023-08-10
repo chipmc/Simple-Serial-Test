@@ -70,7 +70,7 @@ public:
     /**
      * @brief Recalibrates and returns the baseline value of the Magnetometer.
     */
-    float recalibrateBaseline();
+    bool recalibrateBaseline();
 
     /**
      * @brief Gets the threshold, which tells the magnetometer when to BEGIN sensing a vehicle
@@ -99,7 +99,7 @@ public:
      * 
      * Will likely be used to send counts to particle over periods of time
     */
-    int getCountAndReset();
+    int resetCount();
 
     /**
      * @brief Retrieves the total number of vehicles sensed. A Vehicle is added to 

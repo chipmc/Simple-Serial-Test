@@ -11,46 +11,10 @@
 #include "Particle.h"
 #include "MagModel.h"
 #include "Settings.h"
+#include "Storage.h"
 
-MagModel *MagModel::_instance; // Singleton instance of the model
-
-/**
- * Stores data coming from a single vehicle passover.
- * Data at the time of vehicle's initial detection as well as its release. 
- * 
- * indexes:
- * 
- *       0: mag_x;
- *       1: mag_y;
- *       2: mag_z;
- *       3: mag_RMS;
- *       4: reset_mag_x;
- *       5: reset_mag_y;
- *       6: reset_mag_z;
- *       7: reset_mag_RMS;
- * 
- */
-static float passData[8] = {};
-
-static int threshold = 0; // current threshold setting (when to START sensing)
-static int reset_threshold = 0; // current reset_threshold setting (when to STOP sensing)
-static float baseline = 0; // Baseline magnetic field mag_RMS(v0.3.0)
-
-// Magnetic field vector magnitudes in x, y, and z direction relative to the sensor (uT)
-static float mag_x = 0;
-static float mag_y = 0;
-static float mag_z = 0;
-// Root mean square of above vector magnitudes (uT)
-static float mag_RMS = 0;
-
-static int state = 0; // Device state. States are: 0 (WAITING), 1 (SENSING), and 2 (DONE). Set to -1 for baseline recalibration.
-static int vehicle_sensed = 0; // Set to 1 if vehicle is detected, transitions 'state' to SENSING.
-static int ready = 0; // Flag set to 1 in the DONE state. Resets to 0 after passData has been retrieved by the Controller
-
-pin_t Light = D7; // Blue light on front of Boron, which lights up during the SENSING sate.
-
-static int vehicleCount = 0; // Count since last call to getCountAndReset();
-static int totalVehicleCount = 0; // Total count since model was initialized
+MagModel *MagModel::_instance;          // Singleton instance of the model
+pin_t Light = D7;                       // Blue light on front of Boron, which lights up during the SENSING sate.
 
 // [static]
 MagModel &MagModel::instance() {
@@ -80,11 +44,13 @@ void MagModel::setup(){
     Serial1.readStringUntil('\n'); //wait for clean line
     Serial1.parseInt(); //parse over vehicle_sensed
 
-    threshold = Serial1.parseInt();
-    reset_threshold = Serial1.parseInt();
-    baseline = Serial1.parseFloat();
+    current.state = 0;          // Set initial state to WAITING
+
+    sysStatus.threshold = Serial1.parseInt();
+    sysStatus.reset_threshold = Serial1.parseInt();
+    sysStatus.baseline = Serial1.parseFloat();
     delay(2000);
-    Particle.publish("Initialized", String::format("Threshold: %d, Reset Threshold: %d, Baseline %f", threshold, reset_threshold, baseline));
+    Particle.publish("Initialized", String::format("Threshold: %d, Reset Threshold: %d, Baseline %f", sysStatus.threshold, sysStatus.reset_threshold, sysStatus.baseline));
 }
 
 /**
@@ -94,127 +60,86 @@ void MagModel::setup(){
  * mag_y(float),mag_z(float),mag_RMS(float),vehicle_sensed(int)/n
  */
 void MagModel::loop(){       // Returns 1 if a vehicle has been fully sensed.
-    
-    if(ready == 0) {
 
-        Serial1.readStringUntil('\n'); //wait for clean line        
-        vehicle_sensed = Serial1.parseInt(); //used to check if vehicle_sensed
-        threshold = Serial1.parseInt(); //parse threshold
-        reset_threshold = Serial1.parseInt(); //parse reset_threshold
-        baseline = Serial1.parseFloat(); //parse baseline
-        mag_x = Serial1.parseFloat(); //store mag_x
-        mag_y = Serial1.parseFloat(); //store mag_y
-        mag_z = Serial1.parseFloat(); //store mag_z
-        mag_RMS = Serial1.parseFloat(); //store mag_RMS
+    Serial1.readStringUntil('\n'); //wait for clean line        
+    current.vehicle_sensed = Serial1.parseInt(); //used to check if vehicle_sensed
+    sysStatus.threshold = Serial1.parseInt(); //parse threshold
+    sysStatus.reset_threshold = Serial1.parseInt(); //parse reset_threshold
 
-        // Simple FSM for vehicle_sensed state
-        switch(state){
+    sysStatus.baseline = Serial1.parseFloat(); // recalibrate baseline
+    if (current.state == 1) {
+        current.mag_x = Serial1.parseFloat(); //store mag_x
+        current.mag_y = Serial1.parseFloat(); //store mag_y
+        current.mag_z = Serial1.parseFloat(); //store mag_z
+        current.mag_RMS = Serial1.parseFloat(); //store mag_RMS
+    }
 
-            // WAITING
-            case 0: 
+    // Simple FSM for vehicle_sensed state
+    switch(current.state){
 
-                if(vehicle_sensed == 1){ //capture trigger values
+        // WAITING
+        case 0: 
+            if(current.vehicle_sensed == 1){    // Trigger values are the current values
+                current.state = 1;
+            }
+            break;
 
-                    passData[0] = mag_x;
-                    passData[1] = mag_y;
-                    passData[2] = mag_z;
-                    passData[3] = mag_RMS;
+        // SENSING
+        case 1:
+            digitalWrite(Light, HIGH);
+            if(current.vehicle_sensed == 0){     //capture reset values
+                current.resetMag_x = current.mag_x;
+                current.resetMag_y = current.mag_y;
+                current.resetMag_z = current.mag_z;
+                current.resetMag_RMS = current.mag_RMS;
+                current.state = 2;
+                current.ready = true;
+            }
+            break;
+            
+        // DONE
+        case 2:
+            digitalWrite(Light, LOW);
+            current.vehicleCount++;
+            current.totalVehicleCount++;
+            current.state = 0;
+            current.ready = true;
+            break;
 
-                    state = 1;
-                }
-                break;
-
-            // SENSING
-            case 1:
-
-                digitalWrite(Light, HIGH);
-                if(vehicle_sensed == 0){ //capture reset values
-
-                    passData[4] = mag_x;
-                    passData[5] = mag_y;
-                    passData[6] = mag_z;
-                    passData[7] = mag_RMS;
-
-                    state = 2;
-                }
-                break;
-                
-            // DONE
-            case 2:
-
-                digitalWrite(Light, LOW);
-                ++vehicleCount;
-                ++totalVehicleCount;
-                ready = 1;
-                state = 0;
-                break;
-
-            default:
-                break;
-        }
+        default:
+            break;
     }
 }
 
-float* MagModel::getPassData(){
-    if(ready == 1){
-        ready = 0;
-        return passData;
-    }
-    return {};
-}
-
-float MagModel::getBaseline(){
-    if(baseline != 0) {
-        return baseline;
-    }
-    return -1; // error
-}
-
-float MagModel::recalibrateBaseline(){
+bool MagModel::recalibrateBaseline(){
     Serial1.println("CONF:BAS");
-    loop(); // Update the values
-    return baseline;
-}
-
-int MagModel::getThreshold(){
-    return threshold;
+    return true;
 }
 
 int MagModel::setThreshold(int thres){
     if(thres <= MAX_THRESHOLD) {
+        char message[64];
         Serial1.printlnf("CONF:THR %d", thres);
-        loop(); // Update the values
-        thres = getThreshold();
-        Particle.publish("New Threshold Set", String(thres));
-        return thres;
+        snprintf(message,sizeof(message),"New Threshold Set to %i", thres);
+        Particle.publish("Update",message,PRIVATE);
+        return 1;
     }
     return -1; // invalid
-}
-
-int MagModel::getResetThreshold(){
-    return reset_threshold;
 }
 
 int MagModel::setResetThreshold(int reset_thres){
     if(reset_thres <= MAX_RESET_THRESHOLD) {
+        char message[64];
         Serial1.printlnf("CONF:RES %d", reset_thres);
-        loop(); // Update the values.
-        reset_thres = getResetThreshold();
-        Particle.publish("New Reset Threshold Set", String(reset_thres));
-        return reset_thres;
+        snprintf(message,sizeof(message),"New Reset Threshold Set to: %i", reset_thres);
+        Particle.publish("Update",message,PRIVATE);
+        return 1;
     }
     return -1; // invalid
 }
 
-int MagModel::getCountAndReset(){ 
-    int count = vehicleCount;
-    vehicleCount = 0;
-    Particle.publish("Count Retrieved", String(count));
+int MagModel::resetCount(){ 
+    current.vehicleCount = 0;
     Particle.publish("Count Reset");
-    return count;
-}
-
-int MagModel::getTotalVehicleCount(){ 
-    Particle.publish("Total Vehicle Count", String(totalVehicleCount));
-    return totalVehicleCount;
+    return 1;
 }

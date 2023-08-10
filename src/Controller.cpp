@@ -10,14 +10,19 @@
  */
 
 // Version history
-// 0.1 - Moved Particle functions out to their own class
+// 0.1 - Moved Particle functions out to their own class - Did not work - need shared storage
+// 0.2 - ok, last rev was non-functional - this rev works but need to deconflict Particle functions
 
 #include "Particle.h"
 #include "MagModel.h"
 #include "Particle_Functions.h"						// Where we put all the functions specific to Particle
+#include "Storage.h"
 
-char currentPointRelease[6] ="0.1";
+char currentPointRelease[6] ="0.2";
 PRODUCT_VERSION(1);									// For now, we are putting nodes and gateways in the same product group - need to deconflict #
+
+struct current_structure current;
+struct sysStatus_structure sysStatus;
 
 void setup() {  
   // Initiate the MagModel.
@@ -28,28 +33,21 @@ void setup() {
 }
 
 void loop() {
-
-  // Ask the magnetometer for passData.
-  float* passData = MagModel::instance().getPassData();
-
+  static int old_state = 0;
   // Loop MagModel for next iteration.
   MagModel::instance().loop();
 
   // If passData came in, publish events.
-  if(passData != 0) {
-
-    Particle.publish("Detecting Vehicle!", String::format("[mag_RMS: %f, mag_x: %f, mag_y: %f, mag_z: %f]", 
-                        passData[3],
-                        passData[0],
-                        passData[1],
-                        passData[2] ));
-
-    Particle.publish("Released.", String::format("[mag_RMS: %f, mag_x: %f, mag_y: %f, mag_z: %f]", 
-                        passData[7],
-                        passData[4],
-                        passData[5],
-                        passData[6]));
-    
-    MagModel::instance().getTotalVehicleCount();           
+  if(current.state != 0 && current.ready) {
+    char stringMessage[128];
+    if (old_state == 0) {
+      snprintf(stringMessage, sizeof(stringMessage), "Vehicle Detected! [mag_RMS: %4.2f, mag_x: %4.2f, mag_y: %4.2f, mag_z: %4.2f]", current.mag_RMS, current.mag_x, current.mag_y, current.mag_z);
+    }
+    else if (old_state == 1) {
+      snprintf(stringMessage,sizeof(stringMessage),"Vehicle counted: %i, [mag_RMS: %4.2f, mag_x: %4.2f, mag_y: %4.2f, mag_z: %4.2f]", current.totalVehicleCount, current.resetMag_RMS, current.resetMag_x, current.resetMag_y, current.resetMag_z);
+    }  
+    Particle.publish("Vehicle", stringMessage, PRIVATE);   
+    current.ready = false;      
   }
+  old_state = current.state;
 }

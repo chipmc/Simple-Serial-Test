@@ -4,7 +4,7 @@
     "files.associations": {
         "*.ino": "cpp"
     },
-    "particle.targetDevice": "e00fce68a19247cf5511b9b8",
+    "particle.targetDevice": "Boron-Verizon-Test",
     "particle.firmwareVersion": "4.1.0",
     "particle.targetPlatform": "boron",
     "cmake.configureOnOpen": true

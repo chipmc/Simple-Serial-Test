@@ -1,9 +1,10 @@
 #include "Particle.h"
-#include "Particle_Functions.h"
-#include "MagModel.h"           
+#include "Particle_Functions.h" 
+#include "Storage.h"    
+#include "MagModel.h"                               // Where we put all the functions specific to the Magnetometer    
 
 // Prototypes and System Mode calls
-SYSTEM_MODE(SEMI_AUTOMATIC);                        // This will enable user code to start executing automatically.
+SYSTEM_MODE(AUTOMATIC);                        // This will enable user code to start executing automatically.
 SYSTEM_THREAD(ENABLED);                             // Means my code will not be held up by Particle processes.
 STARTUP(System.enableFeature(FEATURE_RESET_INFO));
 
@@ -33,16 +34,15 @@ void Particle_Functions::setup() {
     Log.info("Initializing Particle functions and variables");     // Note: Don't have to be connected but these functions need to in first 30 seconds
 
     // Declare Particle variables.
-    Particle.variable("Baseline", (double)MagModel::instance().getBaseline());
-    Particle.variable("Threshold", (double)MagModel::instance().getThreshold());
-    Particle.variable("Reset Threshold", (double)MagModel::instance().getResetThreshold());
-    Particle.variable("Last Count", (double)MagModel::instance().getCountAndReset());
-    Particle.variable("Total Vehicles", (double)MagModel::instance().getTotalVehicleCount());
-    Particle.variable("Recalibrate Baseline", (double)MagModel::instance().recalibrateBaseline());
+    Particle.variable("Baseline", sysStatus.baseline);
+    Particle.variable("Threshold", sysStatus.threshold);
+    Particle.variable("Last Count", current.vehicleCount);
+    Particle.variable("Total Vehicles", current.totalVehicleCount);
 
     // Declare Particle functions.
     Particle.function("Set the Threshold", &Particle_Functions::setThreshold, this);
     Particle.function("Set the Reset Threshold", &Particle_Functions::setResetThreshold, this);
+    Particle.variable("Recalibrate Baseline", MagModel::instance().recalibrateBaseline());
 }
 
 void Particle_Functions::loop() {
@@ -55,6 +55,10 @@ int Particle_Functions::setThreshold(String threshold){
 
 int Particle_Functions::setResetThreshold(String reset_threshold){
   return MagModel::instance().setResetThreshold(reset_threshold.toInt()); ;// returns -1 if > MAX_RESET_THRESHOLD
+}
+
+int Particle_Functions::recalibrateBaseline(String recalibrate_baseline){
+  return MagModel::instance().recalibrateBaseline();
 }
 
 bool Particle_Functions::disconnectFromParticle() {                    // Ensures we disconnect cleanly from Particle

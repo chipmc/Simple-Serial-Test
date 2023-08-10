@@ -57,6 +57,11 @@ public:
 
 
     /**
+     * @brief Allows you to set the baseline for the magnetometer
+    */
+    int recalibrateBaseline(String baseline);
+
+    /**
      * @brief Disconnects from the Particle network completely
      * 
      * @return true 
