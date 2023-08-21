@@ -47,22 +47,6 @@ public:
     void loop();
 
     /**
-     * @brief Returns vehicle data array, format:
-     *
-     * 
-     *       0: ready; -- designates a data set as ready to read
-     *       1: mag_x;
-     *       2: mag_y;
-     *       3: mag_z;
-     *       4: mag_RMS;
-     *       5: reset_mag_x;
-     *       6: reset_mag_y;
-     *       7: reset_mag_z;
-     *       8: reset_mag_RMS;
-    */
-    float* getPassData();
-
-    /**
      * @brief Returns the baseline value of the Magnetometer
     */
     float getBaseline();
@@ -70,7 +54,7 @@ public:
     /**
      * @brief Recalibrates and returns the baseline value of the Magnetometer.
     */
-    bool recalibrateBaseline();
+    int recalibrateBaseline();
 
     /**
      * @brief Gets the threshold, which tells the magnetometer when to BEGIN sensing a vehicle

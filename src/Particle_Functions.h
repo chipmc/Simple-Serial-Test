@@ -55,11 +55,15 @@ public:
     */
     int setResetThreshold(String reset_threshold);
 
+    /**
+     * @brief allows you to recalibrate the baseline from the particle console
+    */
+    int recalibrateBaseline(String any);
 
     /**
-     * @brief Allows you to set the baseline for the magnetometer
+     * @brief Allows you to reset the current vehicle count from the particle console.
     */
-    int recalibrateBaseline(String baseline);
+    int resetCount(String any);
 
     /**
      * @brief Disconnects from the Particle network completely
