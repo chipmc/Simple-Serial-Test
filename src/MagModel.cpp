@@ -65,32 +65,24 @@ void MagModel::loop(){       // Returns 1 if a vehicle has been fully sensed.
     current.vehicle_sensed = Serial1.parseInt();            //used to check if vehicle_sensed
     sysStatus.threshold = Serial1.parseInt();               //parse threshold
     sysStatus.reset_threshold = Serial1.parseInt();         //parse reset_threshold
-    sysStatus.baseline = Serial1.parseInt();                // recalibrate baseline
-    current.mag_x = Serial1.parseFloat();                   //store mag_x
-    current.mag_y = Serial1.parseFloat();                   //store mag_y
-    current.mag_z = Serial1.parseFloat();                   //store mag_z
-    current.mag_RMS = Serial1.parseFloat();                 //store mag_RMS
+    sysStatus.baseline = Serial1.parseFloat();             //recalibrate baseline
 
     // Simple FSM for vehicle_sensed state
     switch(current.state){
 
         // WAITING
         case 0: 
-            if(current.vehicle_sensed == 1){    // Trigger values are the current values
+            if(current.vehicle_sensed == 1  && current.sensing == false){    // Trigger values are the current values
                 current.state = 1;
+                current.sensing = true;
             }
             break;
 
         // SENSING
         case 1:
             digitalWrite(Light, HIGH);
-            if(current.vehicle_sensed == 0){     //capture reset values
-                current.resetMag_x = current.mag_x;
-                current.resetMag_y = current.mag_y;
-                current.resetMag_z = current.mag_z;
-                current.resetMag_RMS = current.mag_RMS;
+            if(current.vehicle_sensed == 0 && current.done == false){   
                 current.state = 2;
-                current.ready = true;
             }
             break;
             
@@ -100,7 +92,7 @@ void MagModel::loop(){       // Returns 1 if a vehicle has been fully sensed.
             current.vehicleCount++;
             current.totalVehicleCount++;
             current.state = 0;
-            current.ready = true;
+            current.done = true;
             break;
 
         default:
@@ -108,9 +100,9 @@ void MagModel::loop(){       // Returns 1 if a vehicle has been fully sensed.
     }
 }
 
-bool MagModel::recalibrateBaseline(){
+int MagModel::recalibrateBaseline(){
     Serial1.println("CONF:BAS");
-    return true;
+    return 1;
 }
 
 int MagModel::setThreshold(int thres){

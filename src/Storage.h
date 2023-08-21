@@ -8,15 +8,8 @@ struct current_structure {
   int totalVehicleCount;                          // Total number of vehicles that have passed through the system
   int vehicle_sensed;                             // Flag for vehicle sensed
   int state;                                      // State of the FSM; 0 = waiting, 1 = sensing, 2 = done
-  bool ready;                                     // Flag for data ready
-  float mag_x;                                    // X-axis magnetometer value
-  float mag_y;                                    // Y-axis magnetometer value
-  float mag_z;                                    // Z-axis magnetometer value
-  float mag_RMS;                                  // RMS value of the magnetometer
-  float resetMag_x;                               // X-axis reset magnetometer value
-  float resetMag_y;                               // Y-axis reset magnetometer value
-  float resetMag_z;                               // Z-axis reset magnetometer value
-  float resetMag_RMS;                             // RMS value of the reset magnetometer
+  bool sensing;                                   // Flag for sensing message
+  bool done;                                      // Flag for done message
 };
 
 struct sysStatus_structure {

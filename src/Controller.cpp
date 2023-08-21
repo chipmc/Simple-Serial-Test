@@ -18,6 +18,7 @@
 #include "MagModel.h"
 #include "Particle_Functions.h"						// Where we put all the functions specific to Particle
 #include "Storage.h"
+#include "Settings.h"
 
 char currentPointRelease[6] ="0.2";
 PRODUCT_VERSION(1);									// For now, we are putting nodes and gateways in the same product group - need to deconflict #
@@ -34,21 +35,24 @@ void setup() {
 }
 
 void loop() {
-  static int old_state = 0;
+  // static int old_state = 0;
+
   // Loop MagModel for next iteration.
   MagModel::instance().loop();
 
   // If passData came in, publish events.
-  if(current.state != 0 && current.ready) {
+  if(current.sensing || current.done) {
     char stringMessage[128];
-    if (old_state == 0) {
-      snprintf(stringMessage, sizeof(stringMessage), "Vehicle Detected! [mag_RMS: %4.2f, mag_x: %4.2f, mag_y: %4.2f, mag_z: %4.2f]", current.mag_RMS, current.mag_x, current.mag_y, current.mag_z);
-    }
-    else if (old_state == 1) {
-      snprintf(stringMessage,sizeof(stringMessage),"Vehicle counted: %i, [mag_RMS: %4.2f, mag_x: %4.2f, mag_y: %4.2f, mag_z: %4.2f]", current.totalVehicleCount, current.resetMag_RMS, current.resetMag_x, current.resetMag_y, current.resetMag_z);
+    if (current.sensing) {
+      snprintf(stringMessage, sizeof(stringMessage), "Detecting Vehicle!");
+      current.sensing = false;      
+    } 
+    if (current.done) {
+      snprintf(stringMessage,sizeof(stringMessage),"Count: %i, Total Count: %i", current.vehicleCount, current.totalVehicleCount);
+      current.done = false;
+      delay(DELAY);      
     }  
-    Particle.publish("Vehicle", stringMessage, PRIVATE);   
-    current.ready = false;      
+    Particle.publish("Vehicle", stringMessage, PRIVATE);
   }
-  old_state = current.state;
+  // old_state = current.state;
 }

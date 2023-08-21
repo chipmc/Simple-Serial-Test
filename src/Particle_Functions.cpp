@@ -34,15 +34,18 @@ void Particle_Functions::setup() {
     Log.info("Initializing Particle functions and variables");     // Note: Don't have to be connected but these functions need to in first 30 seconds
 
     // Declare Particle variables.
-    Particle.variable("Baseline", sysStatus.baseline);
+    Particle.variable("Baseline", (int)sysStatus.baseline);
     Particle.variable("Threshold", sysStatus.threshold);
+    Particle.variable("Reset Threshold", sysStatus.reset_threshold);
     Particle.variable("Last Count", current.vehicleCount);
     Particle.variable("Total Vehicles", current.totalVehicleCount);
 
     // Declare Particle functions.
     Particle.function("Set the Threshold", &Particle_Functions::setThreshold, this);
     Particle.function("Set the Reset Threshold", &Particle_Functions::setResetThreshold, this);
-    Particle.variable("Recalibrate Baseline", MagModel::instance().recalibrateBaseline());
+    Particle.function("Reset Last Vehicle Count", &Particle_Functions::resetCount, this);
+    Particle.function("Recalibrate Baseline", &Particle_Functions::recalibrateBaseline, this);
+
 }
 
 void Particle_Functions::loop() {
@@ -54,11 +57,15 @@ int Particle_Functions::setThreshold(String threshold){
 }
 
 int Particle_Functions::setResetThreshold(String reset_threshold){
-  return MagModel::instance().setResetThreshold(reset_threshold.toInt()); ;// returns -1 if > MAX_RESET_THRESHOLD
+  return MagModel::instance().setResetThreshold(reset_threshold.toInt()); // returns -1 if > MAX_RESET_THRESHOLD
 }
 
-int Particle_Functions::recalibrateBaseline(String recalibrate_baseline){
+int Particle_Functions::recalibrateBaseline(String anything){
   return MagModel::instance().recalibrateBaseline();
+}
+
+int Particle_Functions::resetCount(String anything){
+  return MagModel::instance().resetCount();
 }
 
 bool Particle_Functions::disconnectFromParticle() {                    // Ensures we disconnect cleanly from Particle
